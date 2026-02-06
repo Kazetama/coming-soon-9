@@ -1,7 +1,13 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\DosenMiddleware;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\KaprodiMiddleware;
+use App\Http\Middleware\SuperadminMiddleware;
+use App\Http\Middleware\UserMiddleware;
+use App\Http\Middleware\RedirectUsertype;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        $middleware->alias([
+            'superadmin' => SuperadminMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'kaprodi' => KaprodiMiddleware::class,
+            'dosen' => DosenMiddleware::class,
+            'user' => UserMiddleware::class,
+            'redirect.usertype' => RedirectUsertype::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
