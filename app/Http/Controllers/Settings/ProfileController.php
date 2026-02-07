@@ -15,34 +15,89 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
     /**
-     * Show the user's profile settings page.
+     * Show profile page
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('settings/profile', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'student' => $user->student,
+            'lecturer' => $user->lecturer,
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * Update profile
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        /**
+         * =========================
+         * UPDATE USER (CORE)
+         * =========================
+         */
+        $user->fill($request->only([
+            'name',
+            'email',
+        ]));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return to_route('profile.edit');
+        /**
+         * =========================
+         * STUDENT DATA
+         * =========================
+         */
+        if ($user->usertype === 'user') {
+            $studentData = $request->only([
+                'nim',
+                'angkatan',
+                'program_studi',
+                'status',
+            ]);
+
+            if (collect($studentData)->filter()->isNotEmpty()) {
+                $user->student()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    $studentData
+                );
+            }
+        }
+
+        /**
+         * =========================
+         * LECTURER DATA
+         * =========================
+         */
+        if ($user->usertype === 'dosen') {
+            $lecturerData = $request->only([
+                'nidn',
+                'spesialisasi',
+                'jabatan_fungsional',
+            ]);
+
+            if (collect($lecturerData)->filter()->isNotEmpty()) {
+                $user->lecturer()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    $lecturerData
+                );
+            }
+        }
+
+        return to_route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's profile.
+     * Delete account
      */
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {

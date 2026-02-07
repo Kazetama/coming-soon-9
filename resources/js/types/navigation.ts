@@ -1,12 +1,6 @@
 import type { InertiaLinkProps } from '@inertiajs/react'
 import type { LucideIcon } from 'lucide-react'
-
-export type Usertype =
-    | 'user'
-    | 'admin'
-    | 'superadmin'
-    | 'kaprodi'
-    | 'dosen'
+import type { Usertype } from './auth'
 
 export type BreadcrumbItem = {
     title: string
