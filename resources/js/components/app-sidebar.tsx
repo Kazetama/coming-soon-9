@@ -17,12 +17,12 @@ import {
 
 import { dashboard } from '@/routes'
 import admin from '@/routes/admin'
+import dosen from '@/routes/dosen'
+import kaprodi from '@/routes/kaprodi'
 import superadmin from '@/routes/superadmin'
 
 import type { NavItem, Usertype } from '@/types'
 import AppLogo from './app-logo'
-import dosen from '@/routes/dosen'
-import kaprodi from '@/routes/kaprodi'
 
 const mainNavItems: NavItem[] = [
     {
