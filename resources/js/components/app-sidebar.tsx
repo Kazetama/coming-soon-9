@@ -25,18 +25,23 @@ import type { NavItem, Usertype } from '@/types'
 import AppLogo from './app-logo'
 
 const mainNavItems: NavItem[] = [
+    // mahasiswa navbar items
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
         usertype: ['user'],
     },
+
+    // admin navbar items
     {
         title: 'Admin Dashboard',
         href: admin.dashboard().url,
         icon: LayoutGrid,
         usertype: ['admin'],
     },
+
+    // superadmin navbar items
     {
         title: 'Superadmin Dashboard',
         href: superadmin.dashboard().url,
@@ -44,11 +49,21 @@ const mainNavItems: NavItem[] = [
         usertype: ['superadmin'],
     },
     {
+        title: 'Mahasiswa Data',
+        href: superadmin.data().url,
+        icon: LayoutGrid,
+        usertype: ['superadmin'],
+    },
+
+    // dosen navbar items
+    {
         title: 'dosen Dashboard',
         href: dosen.dashboard().url,
         icon: LayoutGrid,
         usertype: ['dosen'],
     },
+
+    // kaprodi navbar items
     {
         title: 'Kaprodi Dashboard',
         href: kaprodi.dashboard().url,
