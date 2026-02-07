@@ -4,19 +4,23 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class DataController extends Controller
 {
+    /**
+     * Menampilkan daftar user dengan proteksi identitas diri.
+     */
     public function index(Request $request)
     {
         $validated = $request->validate([
             'search' => 'nullable|string|max:100',
-            'role'   => ['nullable', Rule::in(['superadmin', 'admin', 'dosen', 'kaprodi', 'user'])]
+            'role' => ['nullable', Rule::in(['superadmin', 'admin', 'dosen', 'kaprodi', 'user'])],
         ]);
 
         $users = User::query()
@@ -24,7 +28,7 @@ class DataController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($request->role, fn ($q, $role) => $q->where('usertype', $role))
@@ -37,6 +41,7 @@ class DataController extends Controller
                 'email' => $u->email,
                 'usertype' => $u->usertype,
                 'created_at' => $u->created_at->translatedFormat('d M Y'),
+                // Flag ini penting untuk UI menonaktifkan tombol aksi pada diri sendiri
                 'is_current_user' => $u->id === Auth::id(),
             ]);
 
@@ -47,42 +52,58 @@ class DataController extends Controller
     }
 
     /**
-     * Update Role User.
+     * Update Role User dengan proteksi "Anti-Lockout".
      */
     public function updateRole(Request $request, User $user)
     {
+        // KEAMANAN: Cegah mengubah role diri sendiri
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Anda tidak dapat mengubah role akun Anda sendiri.');
+            return back()->with('error', 'Anda tidak diperbolehkan mengubah role akun sendiri demi keamanan sistem.');
         }
 
         $validated = $request->validate([
-            'role' => [
-                'required',
-                'string',
-                Rule::in(['superadmin', 'admin', 'dosen', 'kaprodi', 'user'])
-            ]
+            'role' => ['required', Rule::in(['superadmin', 'admin', 'dosen', 'kaprodi', 'user'])],
         ]);
 
+        $oldRole = $user->usertype;
+
         $user->update([
-            'usertype' => $validated['role']
+            'usertype' => $validated['role'],
         ]);
-        return back()->with('success', "Role {$user->name} berhasil diperbarui menjadi {$validated['role']}.");
+
+        ActivityLogger::log(
+            'role_updated',
+            $user->id,
+            [
+                'old' => $oldRole,
+                'new' => $validated['role'],
+            ]
+        );
+
+        return back()->with('success', "Role {$user->name} berhasil diperbarui.");
     }
 
     /**
-     * Reset Password ke default.
+     * Reset Password dengan proteksi akses.
      */
     public function resetPassword(User $user)
     {
+        // KEAMANAN: Cegah reset password diri sendiri di panel ini
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Gunakan menu Pengaturan Profil untuk mengubah password Anda.');
         }
 
-        $defaultPassword = 'password123';
+        $newPassword = 'password123';
 
-        $user->forceFill([
-            'password' => Hash::make($defaultPassword),
-        ])->save();
-        return back()->with('success', "Password untuk {$user->name} telah direset.");
+        $user->update([
+            'password' => Hash::make($newPassword),
+        ]);
+
+        ActivityLogger::log(
+            'password_reset',
+            $user->id
+        );
+
+        return back()->with('success', "Password untuk {$user->name} telah direset ke default.");
     }
 }
