@@ -33,7 +33,7 @@ class DataController extends Controller
             })
             ->when($request->role, fn ($q, $role) => $q->where('usertype', $role))
             ->latest()
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString()
             ->through(fn ($u) => [
                 'id' => $u->id,
@@ -41,7 +41,6 @@ class DataController extends Controller
                 'email' => $u->email,
                 'usertype' => $u->usertype,
                 'created_at' => $u->created_at->translatedFormat('d M Y'),
-                // Flag ini penting untuk UI menonaktifkan tombol aksi pada diri sendiri
                 'is_current_user' => $u->id === Auth::id(),
             ]);
 
@@ -56,7 +55,6 @@ class DataController extends Controller
      */
     public function updateRole(Request $request, User $user)
     {
-        // KEAMANAN: Cegah mengubah role diri sendiri
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Anda tidak diperbolehkan mengubah role akun sendiri demi keamanan sistem.');
         }
@@ -88,7 +86,6 @@ class DataController extends Controller
      */
     public function resetPassword(User $user)
     {
-        // KEAMANAN: Cegah reset password diri sendiri di panel ini
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Gunakan menu Pengaturan Profil untuk mengubah password Anda.');
         }

@@ -49,13 +49,13 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'User Data',
-        href: superadmin.data().url,
+        href: "/superadmin/data",
         icon: Database,
         usertype: ['superadmin'],
     },
     {
         title: 'Activity Logs',
-        href: superadmin.activityLog().url,
+        href: "/superadmin/activity-log",
         icon: Activity,
         usertype: ['superadmin'],
     },

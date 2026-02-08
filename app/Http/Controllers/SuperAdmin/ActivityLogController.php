@@ -19,7 +19,7 @@ class ActivityLogController extends Controller
                 $q->where('action', 'like', "%$search%");
             })
             ->latest()
-            ->paginate(15)
+            ->paginate(5)
             ->withQueryString()
             ->through(fn ($l) => [
                 'id' => $l->id,

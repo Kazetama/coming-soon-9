@@ -1,29 +1,24 @@
 <?php
 
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
+use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\DataController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::middleware(['auth', 'redirect.usertype', 'superadmin'])
+Route::middleware(['auth', 'superadmin', 'redirect.usertype'])
     ->prefix('superadmin')
     ->name('superadmin.')
     ->group(function () {
-        Route::get('/dashboard', fn () => Inertia::render('superadmin/dashboard')
-        )->name('dashboard');
 
-        // list
-        Route::get('/data', [DataController::class, 'index'])->name('data');
+        Route::get('/dashboard', DashboardController::class)
+            ->name('dashboard');
 
-        // update role
-        Route::patch('/data/{user}/role', [DataController::class, 'updateRole'])
-            ->name('data.role');
+        Route::prefix('data')->name('data.')->group(function () {
+            Route::get('/', [DataController::class, 'index'])->name('index');
+            Route::patch('/{user}/role', [DataController::class, 'updateRole'])->name('role');
+            Route::post('/{user}/reset-password', [DataController::class, 'resetPassword'])->name('reset');
+        });
 
-        // reset password
-        Route::post('/data/{user}/reset-password', [DataController::class, 'resetPassword'])
-            ->name('data.reset');
-
-        // activity log
         Route::get('/activity-log', [ActivityLogController::class, 'index'])
-            ->name('activity-log');
+            ->name('activity.index');
     });
