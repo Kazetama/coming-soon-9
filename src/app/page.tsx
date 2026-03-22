@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
+import { InvoiceGenerator } from "@/components/invoice/InvoiceGenerator";
 
 export default function Home() {
   return (
-    <div className="p-5">
-      <Button size={"sm"}>Test Button</Button>
-    </div>
+    <main className="min-h-screen">
+      <InvoiceGenerator />
+    </main>
   );
 }
