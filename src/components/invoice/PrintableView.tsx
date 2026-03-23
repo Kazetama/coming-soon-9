@@ -10,6 +10,14 @@ interface PrintableViewProps {
   grandTotal: number;
 }
 
+const formatCurrency = (amount: number, currency: string) => {
+  return new Intl.NumberFormat(currency === "IDR" ? "id-ID" : "en-US", {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: currency === "IDR" ? 0 : 2,
+  }).format(amount);
+};
+
 export const PrintableView = React.forwardRef<HTMLDivElement, PrintableViewProps>(
   ({ details, items, subtotal, taxAmount, grandTotal }, ref) => {
     return (
@@ -57,8 +65,8 @@ export const PrintableView = React.forwardRef<HTMLDivElement, PrintableViewProps
                   <tr key={item.id} className="border-b border-[#e2e8f0] text-[#334155]">
                     <td className="py-4 px-2 font-medium">{item.description || "Description"}</td>
                     <td className="py-4 px-2 text-center">{item.quantity}</td>
-                    <td className="py-4 px-2 text-right">${item.unitPrice.toFixed(2)}</td>
-                    <td className="py-4 px-2 text-right font-medium">${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                    <td className="py-4 px-2 text-right">{formatCurrency(item.unitPrice, details.currency)}</td>
+                    <td className="py-4 px-2 text-right font-medium">{formatCurrency((item.quantity * item.unitPrice), details.currency)}</td>
                   </tr>
                 ))
               )}
@@ -70,15 +78,15 @@ export const PrintableView = React.forwardRef<HTMLDivElement, PrintableViewProps
           <div className="w-1/2">
             <div className="flex justify-between py-2 border-b border-[#e2e8f0]">
               <span className="text-[#64748b] font-medium">Subtotal</span>
-              <span className="text-[#1e293b] font-medium">${subtotal.toFixed(2)}</span>
+              <span className="text-[#1e293b] font-medium">{formatCurrency(subtotal, details.currency)}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-[#e2e8f0]">
               <span className="text-[#64748b] font-medium">Tax ({details.taxPercentage}%)</span>
-              <span className="text-[#1e293b] font-medium">${taxAmount.toFixed(2)}</span>
+              <span className="text-[#1e293b] font-medium">{formatCurrency(taxAmount, details.currency)}</span>
             </div>
             <div className="flex justify-between py-4">
               <span className="text-[#1e293b] font-bold text-xl">Grand Total</span>
-              <span className="text-[#1e293b] font-bold text-xl">${grandTotal.toFixed(2)}</span>
+              <span className="text-[#1e293b] font-bold text-xl">{formatCurrency(grandTotal, details.currency)}</span>
             </div>
           </div>
         </div>

@@ -12,5 +12,6 @@ export interface InvoiceDetails {
   date: string;
   dueDate: string;
   taxPercentage: number;
+  currency: string;
   notes: string;
 }

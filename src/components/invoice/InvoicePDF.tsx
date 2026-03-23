@@ -138,6 +138,14 @@ interface InvoicePDFProps {
   grandTotal: number;
 }
 
+const formatCurrency = (amount: number, currency: string) => {
+  return new Intl.NumberFormat(currency === "IDR" ? "id-ID" : "en-US", {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: currency === "IDR" ? 0 : 2,
+  }).format(amount);
+};
+
 export const InvoicePDF: React.FC<InvoicePDFProps> = ({
   details,
   items,
@@ -200,11 +208,11 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
                 <Text style={styles.tableCellQty}>{item.quantity}</Text>
               </View>
               <View style={styles.colPrice}>
-                <Text style={styles.tableCellPrice}>${item.unitPrice.toFixed(2)}</Text>
+                <Text style={styles.tableCellPrice}>{formatCurrency(item.unitPrice, details.currency)}</Text>
               </View>
               <View style={styles.colTotal}>
                 <Text style={styles.tableCellTotal}>
-                  ${(item.quantity * item.unitPrice).toFixed(2)}
+                  {formatCurrency(item.quantity * item.unitPrice, details.currency)}
                 </Text>
               </View>
             </View>
@@ -216,15 +224,15 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
         <View style={styles.summaryWrapper}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(subtotal, details.currency)}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Tax ({details.taxPercentage}%)</Text>
-            <Text style={styles.summaryValue}>${taxAmount.toFixed(2)}</Text>
+            <Text style={styles.summaryValue}>{formatCurrency(taxAmount, details.currency)}</Text>
           </View>
           <View style={styles.grandTotalRow}>
             <Text style={styles.grandTotalLabel}>Grand Total</Text>
-            <Text style={styles.grandTotalValue}>${grandTotal.toFixed(2)}</Text>
+            <Text style={styles.grandTotalValue}>{formatCurrency(grandTotal, details.currency)}</Text>
           </View>
         </View>
       </View>

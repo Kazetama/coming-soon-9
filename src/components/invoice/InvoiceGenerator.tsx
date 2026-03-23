@@ -15,6 +15,14 @@ import { InvoiceDetails, InvoiceItem } from "@/types/invoice";
 import { PrintableView } from "./PrintableView";
 import { InvoicePDF } from "./InvoicePDF";
 
+const formatCurrency = (amount: number, currency: string) => {
+  return new Intl.NumberFormat(currency === "IDR" ? "id-ID" : "en-US", {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: currency === "IDR" ? 0 : 2,
+  }).format(amount);
+};
+
 export const InvoiceGenerator = () => {
   const [details, setDetails] = useState<InvoiceDetails>({
     companyName: "",
@@ -23,6 +31,7 @@ export const InvoiceGenerator = () => {
     date: new Date().toISOString().split("T")[0],
     dueDate: "",
     taxPercentage: 0,
+    currency: "USD",
     notes: "Please send payment within 30 days of receiving this invoice.",
   });
 
@@ -32,13 +41,14 @@ export const InvoiceGenerator = () => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({ contentRef });
 
-  const handleDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setDetails((prev) => ({
       ...prev,
@@ -186,6 +196,22 @@ export const InvoiceGenerator = () => {
                     onChange={handleDetailsChange}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={details.currency}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleDetailsChange(e)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="IDR">IDR (Rp)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="SGD">SGD (S$)</option>
+                  </select>
+                </div>
               </CardContent>
             </Card>
 
@@ -239,7 +265,7 @@ export const InvoiceGenerator = () => {
                             />
                           </TableCell>
                           <TableCell className="p-2 sm:p-4 text-right font-medium text-slate-700">
-                            ${(item.quantity * item.unitPrice).toFixed(2)}
+                            {formatCurrency(item.quantity * item.unitPrice, details.currency)}
                           </TableCell>
                           <TableCell className="p-2 sm:p-4 text-center">
                             <Button
@@ -275,7 +301,7 @@ export const InvoiceGenerator = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-slate-600">
                     <span>Subtotal</span>
-                    <span className="font-medium text-slate-800">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium text-slate-800">{formatCurrency(subtotal, details.currency)}</span>
                   </div>
                   
                   <div className="flex justify-between items-center gap-4">
@@ -295,7 +321,7 @@ export const InvoiceGenerator = () => {
                   {taxAmount > 0 && (
                     <div className="flex justify-between items-center text-slate-600 text-sm">
                       <span>Tax Amount</span>
-                      <span>${taxAmount.toFixed(2)}</span>
+                      <span>{formatCurrency(taxAmount, details.currency)}</span>
                     </div>
                   )}
                   
@@ -303,7 +329,7 @@ export const InvoiceGenerator = () => {
                   
                   <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg">
                     <span className="font-bold text-slate-800 text-lg">Total</span>
-                    <span className="font-bold text-blue-700 text-xl">${grandTotal.toFixed(2)}</span>
+                    <span className="font-bold text-blue-700 text-xl">{formatCurrency(grandTotal, details.currency)}</span>
                   </div>
                 </div>
 
